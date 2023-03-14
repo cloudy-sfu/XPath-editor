@@ -40,16 +40,10 @@
     </div>
     <div class="col-md-4">
         <label for="source-switch" class="form-label">Source</label>
-        <select class="form-select" id="source-switch" onchange="source_switch()">
+        <select class="form-select" id="source-switch">
             <option selected value="1">Text area</option>
             <option value="2">Uploaded file</option>
         </select>
-        <script>
-            let xml_source = 1;
-            function source_switch() {
-                xml_source = Number(document.getElementById("source-switch").value);
-            }
-        </script>
         <div class="my-4"></div>
         <label for="xpath-editor" class="form-label">XPath</label>
         <textarea id="xpath-editor" rows="2"></textarea>
@@ -60,7 +54,7 @@
                 lineWrapping: true,
                 lineNumbers: true,
             });
-            xpath_editor.setSize(null, xpath_editor.defaultTextHeight() * 2.5);  // 2 lines height (+0.5)
+            xpath_editor.setSize(null, xpath_editor.defaultTextHeight() * 5.5);  // 5 lines height (+0.5)
         </script>
         <div class="text-center alert">
             <button class="btn border-dark text-nowrap" onclick="evaluate_all()">Evaluate XPath</button>
