@@ -66,6 +66,11 @@
             function evaluate_xpath(xpath, xml) {
                 const xml_document = dom_parser.parseFromString(xml, "application/xml");
                 const result_generator = document.evaluate(xpath, xml_document, null, XPathResult.ANY_TYPE, null);
+                const parser_error = xml_document.querySelector("parsererror");
+                if (parser_error) {
+                    alert(parser_error.textContent);
+                    return
+                }
                 let results = [];
                 let result = result_generator.iterateNext();
                 while (result != null) {
@@ -87,6 +92,10 @@
                 }
                 const xml_results = evaluate_xpath(xpath, xml);
                 xml_out_editor.setValue('');
+                if (xml_results.length === 0) {
+                    alert('No result.');
+                    return
+                }
                 for (const result of xml_results) {
                     xml_out_editor.replaceRange(
                         xml_parser.serializeToString(result).replaceAll("\n", "\\n"),
