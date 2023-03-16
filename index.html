@@ -7,114 +7,87 @@
     <!-- Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+            integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
+            crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+            integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+            crossorigin="anonymous"></script>
     <!-- Code mirror -->
     <script src="./codemirror/codemirror.js"></script>
     <link rel="stylesheet" href="./codemirror/codemirror.css" />
     <script src="./codemirror/xml.js"></script>
+    <!-- The following stylesheet is used, even if IDE doesn't recognize the usage. -->
+    <style>.codemirror-read-only {background-color: #f5f5f5;}</style>
 </head>
 <body class="container-md">
+<div class="row alert mb-0"><h5 class="card-title text-center">XPath Evaluator</h5> </div>
 <div class="row alert">
-    <div class="col-md-8">
-        <label for="xml-editor-in" class="form-label">Input XML text</label>
-        <textarea id="xml-editor-in" rows="10"></textarea>
-        <div class="my-4"></div>
-        <p>Or attach XML file </p>
-        <input class="link-dark rounded" id="fileInput" accept="text/xml" type="file" name="file" />
-        <div class="my-4"></div>
-        <label for="xml-editor-out" class="form-label">Retrieved XML nodes (1 query result, 1 line)</label>
-        <textarea id="xml-editor-out" rows="10"></textarea>
-        <script>
-            const xml_in_editor = CodeMirror.fromTextArea(document.getElementById("xml-editor-in"), {
-                mode: "xml",
-                lineNumbers: true,
-                theme: "default",
-            });
-            xml_in_editor.setSize(null, xml_in_editor.defaultTextHeight() * 10.5);
-            const xml_out_editor = CodeMirror.fromTextArea(document.getElementById("xml-editor-out"), {
-                mode: "xml",
-                lineNumbers: true,
-                theme: "default",
-            });
-            xml_out_editor.setSize(null, xml_out_editor.defaultTextHeight() * 10.5);
-        </script>
-    </div>
-    <div class="col-md-4">
-        <label for="source-switch" class="form-label">Source</label>
-        <select class="form-select" id="source-switch">
-            <option selected value="1">Text area</option>
-            <option value="2">Uploaded file</option>
-        </select>
-        <div class="my-4"></div>
+    <div class="col-md-6">
         <label for="xpath-editor" class="form-label">XPath</label>
-        <textarea id="xpath-editor" rows="2"></textarea>
+        <textarea id="xpath-editor"></textarea>
         <script>
             const xpath_editor = CodeMirror.fromTextArea(document.getElementById("xpath-editor"), {
                 mode: "xml",
                 theme: "default",
                 lineWrapping: true,
-                lineNumbers: true,
+                lineNumbers: false,
             });
-            xpath_editor.setSize(null, xpath_editor.defaultTextHeight() * 5.5);  // 5 lines height (+0.5)
+            xpath_editor.setSize(null, xpath_editor.defaultTextHeight() * 2.5);  // 5 lines height (+0.5)
         </script>
-        <div class="text-center alert">
-            <button class="btn border-dark text-nowrap" onclick="evaluate_all()">Evaluate XPath</button>
+        <p class="mt-4">XML sources</p>
+        <nav>
+            <div class="nav nav-tabs" role="tablist">
+                <button class="nav-link active" id="xml-source-1-tab" data-bs-toggle="tab" data-bs-target="#xml-source-1"
+                        type="button" role="tab" aria-controls="xml-source-1" aria-selected="true">Text area</button>
+                <button class="nav-link" id="xml-source-2-tab" data-bs-toggle="tab" data-bs-target="#xml-source-2"
+                        type="button" role="tab" aria-controls="xml-source-2" aria-selected="false">XML file</button>
+            </div>
+        </nav>
+        <div class="tab-content mt-2">
+            <div class="tab-pane fade show active" id="xml-source-1" role="tabpanel" aria-labelledby="xml-source-1-tab">
+                <label for="xml-editor-in" class="form-label">Input the XML text</label>
+                <textarea id="xml-editor-in" rows="10"></textarea>
+                <script>
+                    const xml_in_editor = CodeMirror.fromTextArea(document.getElementById("xml-editor-in"), {
+                        mode: "xml",
+                        lineNumbers: true,
+                        theme: "default",
+                    });
+                    xml_in_editor.setSize(null, xml_in_editor.defaultTextHeight() * 14.5);
+                </script>
+                <div class="alert text-center">
+                    <button class="btn btn-outline-dark" onclick="evaluate_text_area()">Evaluate</button>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="xml-source-2" role="tabpanel" aria-labelledby="xml-source-2-tab">
+                <p>Attach the XML file</p>
+                <input class="link-dark rounded" id="xml-input-file" accept="text/xml" type="file" name="file" />
+                <div class="alert text-center">
+                    <button class="btn btn-outline-dark" onclick="evaluate_xml_file()">Evaluate</button>
+                </div>
+<!-- Limitation: In this version, if you upload a very large file and have evaluated
+an XPath once, it will re-scan the file when you evaluate an XPath the second time.-->
+            </div>
         </div>
+    </div>
+    <div class="col-md-6">
+        <label for="xml-editor-out" class="form-label">
+            Retrieved XML nodes <i>(each line is one query result)</i>
+        </label>
+        <textarea id="xml-editor-out" rows="10"></textarea>
         <script>
-            const dom_parser = new DOMParser();
-            const xml_parser = new XMLSerializer();
-            let xml = null;
-            function evaluate_xpath(xpath, xml) {
-                const xml_document = dom_parser.parseFromString(xml, "application/xml");
-                const result_generator = document.evaluate(xpath, xml_document, null, XPathResult.ANY_TYPE, null);
-                const parser_error = xml_document.querySelector("parsererror");
-                if (parser_error) {
-                    alert(parser_error.textContent);
-                    return
-                }
-                let results = [];
-                let result = result_generator.iterateNext();
-                while (result != null) {
-                    results.push(result);
-                    result = result_generator.iterateNext();
-                }
-                return results
-            }
-            // Specially designed, force <a></a> instead of <a />.
-            // function node_to_string(node) {
-            //     let wrapper = document.createElement('div');
-            //     wrapper.appendChild(node);
-            //     return wrapper.innerHTML.replaceAll("\n", "\\n")
-            // }
-            function evaluate_all() {
-                const xpath = xpath_editor.getValue();
-                if (document.getElementById('source-switch').value === '1') {
-                    xml = xml_in_editor.getValue();
-                }
-                const xml_results = evaluate_xpath(xpath, xml);
-                xml_out_editor.setValue('');
-                if (xml_results.length === 0) {
-                    alert('No result.');
-                    return
-                }
-                for (const result of xml_results) {
-                    xml_out_editor.replaceRange(
-                        xml_parser.serializeToString(result).replaceAll("\n", "\\n"),
-                        CodeMirror.Pos(xml_out_editor.lastLine()));
-                    xml_out_editor.replaceRange('\n', CodeMirror.Pos(xml_out_editor.lastLine()));
-                }
-            }
-            function handleFileSelect(event) {
-                const reader = new FileReader();
-                reader.onload = (event) => {xml = event.target.result};
-                reader.readAsText(event.target.files[0]);
-            }
-            document.getElementById('fileInput').addEventListener('change', handleFileSelect, false);
+            const xml_out_editor = CodeMirror.fromTextArea(document.getElementById("xml-editor-out"), {
+                mode: "xml",
+                lineNumbers: true,
+                theme: "default",
+                readOnly: true,
+            });
+            xml_out_editor.setSize(null, xml_out_editor.defaultTextHeight() * 25.5);
+            xml_out_editor.display.wrapper.classList.add('codemirror-read-only');
         </script>
     </div>
-</div>
-<div class="navbar"></div>
-<div class="navbar fixed-bottom mx-4">
-    <p class="text-muted"><small>&copy; cloudy-sfu 2023</small></p>
+    <script src="./script_1.js"></script>
 </div>
 </body>
 </html>
