@@ -22,6 +22,15 @@ function evaluate_xpath(xpath, xml) {
     }
     return results
 }
+function evaluate_xquery(xquery, xml) {
+    let results = [];
+    SaxonJS.XPath.evaluate(xquery, jQuery.parseXML(xml), {resultForm: 'iterator'}).forEachItem(
+        function (node) {
+            results.push(node);
+        }
+    )
+    return results
+}
 // Specially designed, force <a></a> instead of <a />.
 // function node_to_string(node) {
 //     let wrapper = document.createElement('div');
@@ -41,20 +50,32 @@ function display_query_results(results) {
         xml_out_editor.replaceRange('\n', CodeMirror.Pos(xml_out_editor.lastLine()));
     }
 }
-function evaluate_text_area() {
-    const xpath = xpath_editor.getValue();
-    const xml = xml_in_editor.getValue();
-    const results = evaluate_xpath(xpath, xml);
-    display_query_results(results);
+function export_query_results() {
+    const filename = window.prompt("Filename:", "query_results");
+    if (filename) {
+        const query_results = xml_out_editor.getValue();
+        const blob = new Blob([query_results], {type: 'application/xml'});
+        const dl_url = URL.createObjectURL(blob);
+        const dl_element = document.createElement('a');
+        dl_element.setAttribute('download', filename + ".xml");
+        dl_element.setAttribute('href', dl_url);
+        dl_element.click();
+    }
 }
-function evaluate_xml_file() {
-    const xpath = xpath_editor.getValue();
-    let xml = '';
-    const reader = new FileReader();
-    reader.onload = () => {
-        xml = reader.result;
-        const results = evaluate_xpath(xpath, xml);
+function evaluate_pivot() {
+    const xquery = query_editor.getValue();
+    const xml_source = tab_selector("xml-switch");
+    const lang = tab_selector("query-switch");
+    const q_func = {"query-xpath-tab": evaluate_xpath, "query-xquery-tab": evaluate_xquery};
+    if (xml_source === "xml-source-textarea-tab") {
+        const results = q_func[lang](xquery, xml_in_editor.getValue());
         display_query_results(results);
-    };
-    reader.readAsText(document.getElementById('xml-input-file').files[0]);
+    } else if (xml_source === "xml-source-file-tab") {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const results = q_func[lang](xquery, reader.result);
+            display_query_results(results);
+        };
+        reader.readAsText(document.getElementById('xml-file').files[0]);
+    }
 }
