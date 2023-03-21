@@ -24,11 +24,11 @@ function evaluate_xpath(xpath, xml) {
 }
 function evaluate_xquery(xquery, xml) {
     let results = [];
-    SaxonJS.XPath.evaluate(xquery, jQuery.parseXML(xml), {resultForm: 'iterator'}).forEachItem(
-        function (node) {
-            results.push(node);
-        }
-    )
+    try {
+        SaxonJS.XPath.evaluate(xquery, jQuery.parseXML(xml), {resultForm: 'iterator'})
+            .forEachItem(function (node) {results.push(node);})
+    }
+    catch (e) {alert(e);return}
     return results
 }
 // Specially designed, force <a></a> instead of <a />.
@@ -39,10 +39,7 @@ function evaluate_xquery(xquery, xml) {
 // }
 function display_query_results(results) {
     xml_out_editor.setValue('');
-    if (results.length === 0) {
-        alert('No result.');
-        return
-    }
+    if (results.length === 0) {alert('No result.');return}
     for (const result of results) {
         xml_out_editor.replaceRange(
             xml_parser.serializeToString(result).replaceAll("\n", "\\n"),

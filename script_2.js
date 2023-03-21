@@ -8,13 +8,13 @@ function tab_selector(id) {
     }
 }
 let query_editor = null;
-function generate_cm_editor(cm_mode) {
+function generate_cm_editor(tab) {
     let existed_code = '';
     if (query_editor) {
         existed_code = query_editor.getValue();
     }
     document.getElementById("query-editor").innerHTML = '';
-    if (cm_mode === "xpath") {
+    if (tab === "query-xpath-tab") {
         query_editor = CodeMirror(document.getElementById("query-editor"), {
             mode: "text",
             value: existed_code,
@@ -23,7 +23,7 @@ function generate_cm_editor(cm_mode) {
             lineWrapping: true,
         });
         query_editor.setSize(null, query_editor.defaultTextHeight() * 2.5);
-    } else if (cm_mode === "xquery") {
+    } else if (tab === "query-xquery-tab") {
         query_editor = CodeMirror(document.getElementById("query-editor"), {
             mode: "xquery",
             value: existed_code,
@@ -33,9 +33,7 @@ function generate_cm_editor(cm_mode) {
         query_editor.setSize(null, query_editor.defaultTextHeight() * 5.5);
     }
 }
-generate_cm_editor("xpath");
+generate_cm_editor("query-xpath-tab");
 document.getElementById("query-switch").addEventListener("click", () => {
-    const lang = tab_selector("query-switch");
-    const cm_mode = {"query-xpath-tab": "xpath", "query-xquery-tab": "xquery"};
-    generate_cm_editor(cm_mode[lang]);
+    generate_cm_editor(tab_selector("query-switch"));
 })

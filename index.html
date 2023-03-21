@@ -72,6 +72,9 @@
                 an XPath once, it will re-scan the file when you evaluate an XPath the second time.-->
             </div>
         </div>
+        <div class="alert text-center">
+            <button class="btn btn-outline-dark" onclick="evaluate_pivot()">Evaluate</button>
+        </div>
     </div>
     <div class="col-md-6">
         <label for="xml-editor-out" class="form-label">
@@ -88,17 +91,7 @@
             xml_out_editor.setSize(null, xml_out_editor.defaultTextHeight() * 26.5);
             xml_out_editor.display.wrapper.classList.add('codemirror-read-only');
         </script>
-    </div>
-
-</div>
-<div class="alert row">
-    <div class="col-md-6">
-        <div class="text-center">
-            <button class="btn btn-outline-dark" onclick="evaluate_pivot()">Evaluate</button>
-        </div>
-    </div>
-    <div class="col-md-6">
-        <div class="text-center">
+        <div class="alert text-center">
             <div class="btn btn-outline-dark" onclick="export_query_results()">Export</div>
         </div>
     </div>
