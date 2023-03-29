@@ -63,7 +63,10 @@ function evaluate_pivot() {
     const xquery = query_editor.getValue();
     const xml_source = tab_selector("xml-switch");
     const lang = tab_selector("query-switch");
-    const q_func = {"query-xpath-tab": evaluate_xpath, "query-xquery-tab": evaluate_xquery};
+    const q_func = {
+        "query-xpath-tab": evaluate_xpath,
+        "query-xquery-tab": evaluate_xquery
+    };
     if (xml_source === "xml-source-textarea-tab") {
         const results = q_func[lang](xquery, xml_in_editor.getValue());
         display_query_results(results);
